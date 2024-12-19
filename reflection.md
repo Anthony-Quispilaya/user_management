@@ -30,4 +30,6 @@ A new feature, Admin User Profile Management, has been introduced that allows ad
 
 The Professional Status Display Enhancement feature improves the user experience by visibly displaying a user's professional status within the system. This feature ensures that the is_professional flag, which marks users as "professional," is clearly presented on user profile pages or relevant interfaces. By displaying this status, users and administrators can easily identify professional users at a glance, fostering better recognition and transparency. The visual representation of professional status enhances navigation, user interaction, and overall usability, providing a more intuitive and informed experience for both administrators and end users.
 
-4. 
+4. User Profile Update Capability
+
+The User Profile Update Capability feature empowers users to manage and personalize their own profiles within the system. This functionality allows authenticated users to update key details such as their first name, last name, bio, profile picture, and social media links (e.g., LinkedIn or GitHub). By providing a structured and secure way for users to modify their information, the feature enhances user autonomy and ensures profiles remain current and accurate. It also simplifies profile management, fostering a more personalized and engaging experience while maintaining data integrity within the system.

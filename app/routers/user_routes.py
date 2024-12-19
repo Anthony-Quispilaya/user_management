@@ -204,8 +204,11 @@ async def upgrade_user_to_professional(
         raise HTTPException(status_code=404, detail="User not found")
 
     # Check role restriction
-    if current_user["role"] == "MANAGER" and target_user.role in ["MANAGER", "ADMIN"]:
-        raise HTTPException(status_code=403, detail="You cannot update this user.")
+    if current_user["role"] == "MANAGER" and target_user.role.value in ["MANAGER", "ADMIN"]:
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot update this user."
+        )
 
     # Update professional status
     target_user.update_professional_status(True)

@@ -166,6 +166,36 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
 
 
 @router.get("/users/", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+
+async def upgrade_user_to_professional(
+    user_id: UUID,
+    user_update: UserUpdate = None,  # Optional, default set to None
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(["ADMIN", "MANAGER"])),
+):
+    # Fetch the target user
+    target_user = await UserService.get_by_id(db, user_id)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Check role restriction
+    if current_user["role"] == "MANAGER" and target_user.role in ["MANAGER", "ADMIN"]:
+        raise HTTPException(status_code=403, detail="You cannot update this user.")
+
+    # Update professional status
+    target_user.update_professional_status(True)
+
+    # If user_update contains fields, apply them
+    if user_update:
+        update_data = user_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(target_user, key, value)
+
+    await db.commit()
+    await db.refresh(target_user)
+
+    return UserResponse.model_validate(target_user)
+
 async def list_users(
     request: Request,
     skip: int = 0,

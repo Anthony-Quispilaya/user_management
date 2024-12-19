@@ -191,6 +191,63 @@ async def list_users(
         links=pagination_links  # Ensure you have appropriate logic to create these links
     )
 
+@router.put("/users/{user_id}/upgrade", response_model=UserResponse, tags=["Admin Management"])
+async def upgrade_user_to_professional(
+    user_id: UUID,
+    user_update: UserUpdate = None,  # Optional, default set to None
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(["ADMIN", "MANAGER"])),
+):
+    # Fetch the target user
+    target_user = await UserService.get_by_id(db, user_id)
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Check role restriction
+    if current_user["role"] == "MANAGER" and target_user.role.value in ["MANAGER", "ADMIN"]:
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot update this user."
+        )
+
+    # Update professional status
+    target_user.update_professional_status(True)
+
+    # If user_update contains fields, apply them
+    if user_update:
+        update_data = user_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(target_user, key, value)
+
+    await db.commit()
+    await db.refresh(target_user)
+
+    return UserResponse.model_validate(target_user)
+
+@router.put("/users/me", response_model=UserResponse, tags=["User Profile"])
+async def update_own_profile(
+    user_update: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),  # Fetch the currently authenticated user
+):
+    """
+    Allow authenticated users to update their own profile.
+    """
+    # Fetch the current user's record from the database
+    user_id = current_user["user_id"]
+    user = await UserService.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update the provided fields
+    update_data = user_update.model_dump(exclude_unset=True)  # Exclude fields not sent in the request
+    for key, value in update_data.items():
+        setattr(user, key, value)  # Dynamically update user attributes
+
+    await db.commit()  # Save changes to the database
+    await db.refresh(user)  # Refresh the user instance with updated values
+    return UserResponse.model_validate(user)
+
 
 @router.post("/register/", response_model=UserResponse, tags=["Login and Registration"])
 async def register(user_data: UserCreate, session: AsyncSession = Depends(get_db), email_service: EmailService = Depends(get_email_service)):

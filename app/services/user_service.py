@@ -37,6 +37,11 @@ class UserService:
         result = await cls._execute_query(session, query)
         return result.scalars().first() if result else None
 
+    @staticmethod
+    async def get_by_id(db: AsyncSession, user_id: UUID):
+        result = await db.execute(select(User).where(User.id == user_id))
+        return result.scalars().first()
+
     @classmethod
     async def get_by_id(cls, session: AsyncSession, user_id: UUID) -> Optional[User]:
         return await cls._fetch_user(session, id=user_id)

@@ -15,3 +15,19 @@ Another revolutionary aspect of the course was the introduction of test cases. I
 The experience of implementing workflows in GitHub was yet another enlightening aspect of the course. Learning to automate workflows and integrate test cases streamlined the process of testing my code, making it significantly more accessible for others to assess my work. Alongside Docker’s capabilities, which facilitate the seamless deployment of applications by allowing for instant setup without manual configurations, I witnessed firsthand the profound benefits of adopting modern development workflows.
 
 Overall, this course has been an incredibly valuable and practical learning experience. It equipped me with real-world skills that I now regard as essential for anyone aspiring to develop programs or applications. The emphasis on structure, testing, and efficiency are all critical components of successful software development that I am now better prepared to leverage. I feel empowered to contribute meaningfully to future projects, armed with the tools and knowledge necessary to create, test, and deploy reliable web applications.
+
+Features:
+
+1. Professional User Status Management
+
+The new feature of adding professional status to users introduces a way to mark users as "professional" within the system. This is achieved by adding a dedicated field, is_professional, to the user model, which acts as a flag to indicate whether a user holds professional status. Additionally, a professional_status_updated_at field has been implemented to log the exact timestamp when a user's professional status is updated. This feature allows administrators and managers to upgrade users to professional status easily, ensuring transparency and traceability of status changes. By integrating this functionality, the system can differentiate between regular and professional users, enabling tailored experiences, permissions, or access to specific features for professional users. This enhancement improves user management and paves the way for future extensions, such as professional-only functionalities or reporting.
+
+2. Admin User Profile Management
+
+A new feature, Admin User Profile Management, has been introduced that allows administrators to update user profiles. This enhancement gives admins the ability to manage and modify key user information, including fields such as first name, last name, bio, profile picture URL, and professional status. By leveraging this feature, administrators can ensure user profiles remain accurate, up-to-date, and consistent across the system. Additionally, admins can upgrade a user’s professional status when necessary, reflecting achievements or role changes within the platform. This functionality streamlines user management, improves administrative control, and ensures that profile data aligns with organizational needs.
+
+3. Professional Status Display Enhancement
+
+The Professional Status Display Enhancement feature improves the user experience by visibly displaying a user's professional status within the system. This feature ensures that the is_professional flag, which marks users as "professional," is clearly presented on user profile pages or relevant interfaces. By displaying this status, users and administrators can easily identify professional users at a glance, fostering better recognition and transparency. The visual representation of professional status enhances navigation, user interaction, and overall usability, providing a more intuitive and informed experience for both administrators and end users.
+
+4. 

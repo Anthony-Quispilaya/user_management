@@ -191,6 +191,25 @@ async def list_users(
         links=pagination_links  # Ensure you have appropriate logic to create these links
     )
 
+@router.put("/users/profile", response_model=UserResponse, tags=["User Profile"])
+async def update_own_profile(
+    user_update: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = current_user["user_id"]
+    user = await UserService.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    update_data = user_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(user, key, value)
+
+    await db.commit()
+    await db.refresh(user)
+    return UserResponse.model_validate(user)
+
 
 @router.post("/register/", response_model=UserResponse, tags=["Login and Registration"])
 async def register(user_data: UserCreate, session: AsyncSession = Depends(get_db), email_service: EmailService = Depends(get_email_service)):

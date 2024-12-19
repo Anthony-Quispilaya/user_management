@@ -166,7 +166,32 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
 
 
 @router.get("/users/", response_model=UserListResponse, tags=["User Management Requires (Admin or Manager Roles)"])
+async def list_users(
+    request: Request,
+    skip: int = 0,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))
+):
+    total_users = await UserService.count(db)
+    users = await UserService.list_users(db, skip, limit)
 
+    user_responses = [
+        UserResponse.model_validate(user) for user in users
+    ]
+    
+    pagination_links = generate_pagination_links(request, skip, limit, total_users)
+    
+    # Construct the final response with pagination details
+    return UserListResponse(
+        items=user_responses,
+        total=total_users,
+        page=skip // limit + 1,
+        size=len(user_responses),
+        links=pagination_links  # Ensure you have appropriate logic to create these links
+    )
+
+@router.put("/users/{user_id}/upgrade", response_model=UserResponse, tags=["Admin Management"])
 async def upgrade_user_to_professional(
     user_id: UUID,
     user_update: UserUpdate = None,  # Optional, default set to None
@@ -196,48 +221,28 @@ async def upgrade_user_to_professional(
 
     return UserResponse.model_validate(target_user)
 
-async def list_users(
-    request: Request,
-    skip: int = 0,
-    limit: int = 10,
-    db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))
-):
-    total_users = await UserService.count(db)
-    users = await UserService.list_users(db, skip, limit)
-
-    user_responses = [
-        UserResponse.model_validate(user) for user in users
-    ]
-    
-    pagination_links = generate_pagination_links(request, skip, limit, total_users)
-    
-    # Construct the final response with pagination details
-    return UserListResponse(
-        items=user_responses,
-        total=total_users,
-        page=skip // limit + 1,
-        size=len(user_responses),
-        links=pagination_links  # Ensure you have appropriate logic to create these links
-    )
-
-@router.put("/users/profile", response_model=UserResponse, tags=["User Profile"])
+@router.put("/users/me", response_model=UserResponse, tags=["User Profile"])
 async def update_own_profile(
     user_update: UserUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),  # Fetch the currently authenticated user
 ):
+    """
+    Allow authenticated users to update their own profile.
+    """
+    # Fetch the current user's record from the database
     user_id = current_user["user_id"]
     user = await UserService.get_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    update_data = user_update.model_dump(exclude_unset=True)
+    # Update the provided fields
+    update_data = user_update.model_dump(exclude_unset=True)  # Exclude fields not sent in the request
     for key, value in update_data.items():
-        setattr(user, key, value)
+        setattr(user, key, value)  # Dynamically update user attributes
 
-    await db.commit()
-    await db.refresh(user)
+    await db.commit()  # Save changes to the database
+    await db.refresh(user)  # Refresh the user instance with updated values
     return UserResponse.model_validate(user)
 
 
